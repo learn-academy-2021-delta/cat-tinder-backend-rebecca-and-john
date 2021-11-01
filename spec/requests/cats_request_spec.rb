@@ -13,4 +13,22 @@ RSpec.describe "Cats", type: :request do
             expect(cat.length).to eq 1
         end
     end
+
+    describe "POST /create" do
+        it "creates a cat" do
+            cat_params = {
+                cat: {
+                    name: 'Shadow',
+                    age: 4,
+                    enjoys: 'Sleeping and cuddling.'
+                }
+            }
+
+            post '/cats', params: cat_params
+            expect(response).to have_http_status(200)
+            cat = Cat.first
+            expect(cat.name).to eq 'Shadow'
+        end
+    end
+
 end
