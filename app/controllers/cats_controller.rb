@@ -27,6 +27,7 @@ class CatsController < ApplicationController
   def destroy
     cat = Cat.find(params[:id])
     cat.destroy
+    render json: cat
   end
 
   private
