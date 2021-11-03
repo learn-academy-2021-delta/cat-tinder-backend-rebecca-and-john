@@ -75,8 +75,8 @@ RSpec.describe "Cats", type: :request do
 
     end
     
-    # Response status testing
-    it "doesn't create a cat without a name" do
+    # Response status testing for create
+    it "doesn't create a cat without a name and returns 422" do
         cat_params = {
             cat: {
                 age: 2,
@@ -89,7 +89,7 @@ RSpec.describe "Cats", type: :request do
         expect(json['name']).to include "can't be blank"
     end
 
-    it "doesn't create a cat without an age" do
+    it "doesn't create a cat without an age and returns 422" do
         cat_params = {
             cat: {
                 name: "Nala",
@@ -102,7 +102,7 @@ RSpec.describe "Cats", type: :request do
         expect(json['age']).to include "can't be blank"
     end
 
-    it "doesn't create a cat without an enjoys" do
+    it "doesn't create a cat without an enjoys and returns 422" do
         cat_params = {
             cat: {
                 name: "Nala",
@@ -115,5 +115,117 @@ RSpec.describe "Cats", type: :request do
         # where json = {"enjoys"=>["can't be blank", "is too short (minimum is 10 characters)"]}
         expect(json['enjoys']).to include "can't be blank"
     end
+
+    it "doesn't create a cat when enjoys is less than 10 characters and returns 422" do
+        cat_params = {
+            cat: {
+                name: "Nala",
+                age: 2,
+                enjoys: "eats"
+            }
+        }
+        post '/cats', params: cat_params
+        expect(response.status).to eq 422
+        json = JSON.parse(response.body)
+        expect(json['enjoys']).to include "is too short (minimum is 10 characters)"
+    end
+
+    # Response status testing for update
+    it "doesn't update a cat without a name and returns 422" do
+        cat_params = {
+            cat: {
+                name: 'Shadow',
+                age: 4,
+                enjoys: 'Sleeping and cuddling.'
+            }
+        }
+        post '/cats', params: cat_params
+        cat = Cat.first    
+        updated_cat_params = {
+            cat: {
+                name: '',
+                age: 20,
+                enjoys: 'Sleeping and cuddling.'
+            }
+        }
+        patch "/cats/#{cat.id}", params: updated_cat_params
+        cat = Cat.first      
+        expect(response.status).to eq 422
+        json = JSON.parse(response.body)
+        expect(json['name']).to include "can't be blank"
+    end
+
+    it "doesn't update a cat without an age and returns 422" do
+        cat_params = {
+            cat: {
+                name: 'Shadow',
+                age: 4,
+                enjoys: 'Sleeping and cuddling.'
+            }
+        }
+        post '/cats', params: cat_params
+        cat = Cat.first    
+        updated_cat_params = {
+            cat: {
+                name: 'Oreo',
+                age: '',
+                enjoys: 'Sleeping and cuddling.'
+            }
+        }
+        patch "/cats/#{cat.id}", params: updated_cat_params
+        cat = Cat.first  
+        expect(response.status).to eq 422
+        json = JSON.parse(response.body)
+        expect(json['age']).to include "can't be blank"
+    end
+
+    it "doesn't update a cat without an enjoys and returns 422" do
+        cat_params = {
+            cat: {
+                name: 'Shadow',
+                age: 4,
+                enjoys: 'Sleeping and cuddling.'
+            }
+        }
+        post '/cats', params: cat_params
+        cat = Cat.first    
+        updated_cat_params = {
+            cat: {
+                name: 'Shadow',
+                age: 10,
+                enjoys: ''
+            }
+        }
+        patch "/cats/#{cat.id}", params: updated_cat_params
+        cat = Cat.first  
+        expect(response.status).to eq 422
+        json = JSON.parse(response.body)
+        expect(json['enjoys']).to include "can't be blank"
+    end
+
+    it "doesn't update a cat when enjoys is less than 10 characters and returns 422" do
+        cat_params = {
+            cat: {
+                name: 'Shadow',
+                age: 4,
+                enjoys: 'Sleeping and cuddling.'
+            }
+        }
+        post '/cats', params: cat_params
+        cat = Cat.first    
+        updated_cat_params = {
+            cat: {
+                name: 'Shadow',
+                age: 4,
+                enjoys: 'eating'
+            }
+        }
+        patch "/cats/#{cat.id}", params: updated_cat_params
+        cat = Cat.first
+        expect(response.status).to eq 422
+        json = JSON.parse(response.body)
+        expect(json['enjoys']).to include "is too short (minimum is 10 characters)"
+    end
+
 
 end
